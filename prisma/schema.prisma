@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  websites      Website[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Website {
+  id                String             @id @default(cuid())
+  userId            String
+  name              String
+  domain            String             @unique
+  targetCountry     String             @default("ES")
+  status            WebsiteStatus      @default(PENDING)
+  verificationToken String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keywords          Keyword[]
+  audits            Audit[]
+  optimizationTasks OptimizationTask[]
+  reports           Report[]
+}
+
+enum WebsiteStatus {
+  PENDING
+  VERIFIED
+}
+
+model Keyword {
+  id           String          @id @default(cuid())
+  websiteId    String
+  term         String
+  searchVolume Int
+  difficulty   Int
+  intent       KeywordIntent
+  currentPos   Int
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  website      Website         @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  history      KeywordHistory[]
+  @@unique([websiteId, term])
+}
+
+enum KeywordIntent {
+  INFORMATIONAL
+  NAVIGATIONAL
+  TRANSACTIONAL
+  COMMERCIAL
+}
+
+model KeywordHistory {
+  id        String   @id @default(cuid())
+  keywordId String
+  position  Int
+  date      DateTime @default(now())
+  keyword   Keyword  @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+  @@unique([keywordId, date])
+}
+
+model Audit {
+  id        String      @id @default(cuid())
+  websiteId String
+  score     Int
+  status    AuditStatus @default(COMPLETED)
+  runAt     DateTime    @default(now())
+  createdAt DateTime    @default(now())
+  website   Website     @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  checks    AuditCheck[]
+}
+
+enum AuditStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model AuditCheck {
+  id             String        @id @default(cuid())
+  auditId        String
+  category       AuditCategory
+  name           String
+  severity       Severity
+  message        String
+  recommendation String?
+  audit          Audit         @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+enum AuditCategory {
+  META
+  SPEED
+  LINKS
+  CANONICAL
+  SITEMAP
+  INDEXABILITY
+  STRUCTURED_DATA
+  IMAGES
+}
+
+enum Severity {
+  CRITICAL
+  WARNING
+  OK
+}
+
+model OptimizationTask {
+  id          String           @id @default(cuid())
+  websiteId   String
+  type        OptimizationType
+  status      TaskStatus       @default(PENDING)
+  description String
+  appliedAt   DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  website     Website          @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+}
+
+enum OptimizationType {
+  META_DESCRIPTION
+  DUPLICATE_TITLE
+  IMAGE_COMPRESSION
+  ALT_TEXT
+}
+
+enum TaskStatus {
+  PENDING
+  APPLIED
+  VERIFIED
+  REVERTED
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  websiteId   String
+  month       Int
+  year        Int
+  pdfUrl      String?
+  generatedAt DateTime @default(now())
+  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  @@unique([websiteId, month, year])
+}
