@@ -20,7 +20,12 @@ export async function POST(request: Request) {
     const { name, domain, country } = body;
 
     const website = await prisma.website.create({
-      data: { name, domain, country },
+      data: {
+        name,
+        domain,
+        country,
+        user: { connect: { email: 'demo@seopilot.app' } },
+      },
     });
 
     return NextResponse.json(website);
