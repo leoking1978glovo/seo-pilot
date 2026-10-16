@@ -16,6 +16,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   websites      Website[]
+  audits        Audit[]
+  reports       Report[]
   accounts      Account[]
   sessions      Session[]
 }
@@ -26,14 +28,15 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -46,47 +49,64 @@ model Session {
 }
 
 model Website {
-  id                String             @id @default(cuid())
-  userId            String
-  name              String
-  domain            String             @unique
-  targetCountry     String             @default("ES")
-  status            WebsiteStatus      @default(PENDING)
-  verificationToken String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  keywords          Keyword[]
-  audits            Audit[]
-  optimizationTasks OptimizationTask[]
-  reports           Report[]
+  id        String   @id @default(cuid())
+  name      String
+  domain    String   @unique
+  country   String   @default("ES")
+  userId    String
+  score     Int      @default(0)
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits    Audit[]
+
+  @@index([userId])
 }
 
-enum WebsiteStatus {
-  PENDING
-  VERIFIED
+model Audit {
+  id        String   @id @default(cuid())
+  websiteId String
+  userId    String
+  score     Int      @default(0)
+  status    String   @default("completed")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  website   Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks    AuditCheck[]
+
+  @@index([websiteId])
+  @@index([userId])
+}
+
+model AuditCheck {
+  id        String   @id @default(cuid())
+  auditId   String
+  type      String
+  severity  String   @default("warning")
+  status    String   @default("pending")
+  message   String   @db.Text
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+  audit     Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
 }
 
 model Keyword {
-  id           String          @id @default(cuid())
+  id           String   @id @default(cuid())
   websiteId    String
   term         String
-  searchVolume Int
-  difficulty   Int
-  intent       KeywordIntent
-  currentPos   Int
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  website      Website         @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  position     Int      @default(0)
+  volume       Int      @default(0)
+  difficulty   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   history      KeywordHistory[]
-  @@unique([websiteId, term])
-}
 
-enum KeywordIntent {
-  INFORMATIONAL
-  NAVIGATIONAL
-  TRANSACTIONAL
-  COMMERCIAL
+  @@index([websiteId])
+  @@unique([websiteId, term])
 }
 
 model KeywordHistory {
@@ -95,88 +115,29 @@ model KeywordHistory {
   position  Int
   date      DateTime @default(now())
   keyword   Keyword  @relation(fields: [keywordId], references: [id], onDelete: Cascade)
-  @@unique([keywordId, date])
-}
 
-model Audit {
-  id        String      @id @default(cuid())
-  websiteId String
-  score     Int
-  status    AuditStatus @default(COMPLETED)
-  runAt     DateTime    @default(now())
-  createdAt DateTime    @default(now())
-  website   Website     @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  checks    AuditCheck[]
-}
-
-enum AuditStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-}
-
-model AuditCheck {
-  id             String        @id @default(cuid())
-  auditId        String
-  category       AuditCategory
-  name           String
-  severity       Severity
-  message        String
-  recommendation String?
-  audit          Audit         @relation(fields: [auditId], references: [id], onDelete: Cascade)
-}
-
-enum AuditCategory {
-  META
-  SPEED
-  LINKS
-  CANONICAL
-  SITEMAP
-  INDEXABILITY
-  STRUCTURED_DATA
-  IMAGES
-}
-
-enum Severity {
-  CRITICAL
-  WARNING
-  OK
+  @@index([keywordId])
 }
 
 model OptimizationTask {
-  id          String           @id @default(cuid())
-  websiteId   String
-  type        OptimizationType
-  status      TaskStatus       @default(PENDING)
-  description String
-  appliedAt   DateTime?
-  verifiedAt  DateTime?
-  createdAt   DateTime         @default(now())
-  website     Website          @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-}
+  id        String   @id @default(cuid())
+  websiteId String
+  type      String
+  status    String   @default("pending")
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-enum OptimizationType {
-  META_DESCRIPTION
-  DUPLICATE_TITLE
-  IMAGE_COMPRESSION
-  ALT_TEXT
-}
-
-enum TaskStatus {
-  PENDING
-  APPLIED
-  VERIFIED
-  REVERTED
+  @@index([websiteId])
 }
 
 model Report {
-  id          String   @id @default(cuid())
-  websiteId   String
-  month       Int
-  year        Int
-  pdfUrl      String?
-  generatedAt DateTime @default(now())
-  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
-  @@unique([websiteId, month, year])
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
