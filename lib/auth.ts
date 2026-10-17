@@ -1,11 +1,9 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
       name: 'Credenciales',
@@ -14,18 +12,44 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Contraseña', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-        if (!user || !user.password) return null;
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log('❌ Credenciales vacías');
+            return null;
+          }
+
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+
+          if (!user) {
+            console.log('❌ Usuario no encontrado:', credentials.email);
+            return null;
+          }
+
+          if (!user.password) {
+            console.log('❌ Usuario sin password');
+            return null;
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!isValid) {
+            console.log('❌ Password incorrecto');
+            return null;
+          }
+
+          console.log('✅ Login exitoso:', user.email);
+          
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          };
+        } catch (error) {
+          console.error('Error en authorize:', error);
+          return null;
+        }
       },
     }),
   ],
@@ -41,4 +65,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
