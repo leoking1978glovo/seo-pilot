@@ -22,9 +22,9 @@ export async function POST(request: Request) {
 
     const audit = await prisma.audit.create({
       data: {
-        websiteId,
         score: score || 0,
         status: status || 'completed',
+        website: { connect: { id: websiteId } },
         user: { connect: { email: 'demo@seopilot.app' } },
       },
     });
