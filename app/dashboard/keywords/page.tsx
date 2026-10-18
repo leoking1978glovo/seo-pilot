@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import NewKeywordModal from './new-keyword-modal';
 
 interface Website {
   id: string;
@@ -23,6 +24,7 @@ interface Keyword {
 export default function KeywordsPage() {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadKeywords();
@@ -69,7 +71,10 @@ export default function KeywordsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Keywords</h1>
           <p className="text-slate-500 mt-1">Palabras clave monitoreadas</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
           <Search className="w-4 h-4" />
           Nueva keyword
         </button>
@@ -124,6 +129,12 @@ export default function KeywordsPage() {
           ))
         )}
       </div>
+
+      <NewKeywordModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onKeywordCreated={loadKeywords}
+      />
     </div>
   );
 }
