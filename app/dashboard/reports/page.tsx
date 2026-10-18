@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Plus } from 'lucide-react';
+import NewReportModal from './new-report-modal';
 
 interface Report {
   id: string;
@@ -18,6 +19,7 @@ interface Report {
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadReports();
@@ -55,7 +57,10 @@ export default function ReportsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Informes</h1>
           <p className="text-slate-500 mt-1">Reportes SEO generados</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Nuevo informe
         </button>
@@ -87,6 +92,12 @@ export default function ReportsPage() {
           ))
         )}
       </div>
+
+      <NewReportModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onReportCreated={loadReports}
+      />
     </div>
   );
 }
