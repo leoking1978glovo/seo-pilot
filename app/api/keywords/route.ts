@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET: Obtener todas las keywords
 export async function GET() {
   try {
     const keywords = await prisma.keyword.findMany({
-      include: { website: true },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(keywords);
@@ -14,7 +12,6 @@ export async function GET() {
   }
 }
 
-// POST: Crear una nueva keyword
 export async function POST(request: Request) {
   try {
     const body = await request.json();

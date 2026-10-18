@@ -10,10 +10,7 @@ interface Keyword {
   position: number;
   volume: number;
   difficulty: number;
-  website: {
-    name: string;
-    domain: string;
-  };
+  websiteId: string;
 }
 
 export default function KeywordsPage() {
@@ -60,7 +57,6 @@ export default function KeywordsPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Keywords</h1>
@@ -72,7 +68,6 @@ export default function KeywordsPage() {
         </button>
       </div>
 
-      {/* Lista */}
       <div className="space-y-4">
         {keywords.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
@@ -88,7 +83,7 @@ export default function KeywordsPage() {
                     {getPositionIcon(kw.position)}
                     <div>
                       <h3 className="font-semibold text-slate-900">{kw.term}</h3>
-                      <p className="text-sm text-slate-500">{kw.website.name} - {kw.website.domain}</p>
+                      <p className="text-sm text-slate-500">ID sitio: {kw.websiteId}</p>
                     </div>
                   </div>
 
