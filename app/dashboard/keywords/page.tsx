@@ -4,6 +4,12 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
+interface Website {
+  id: string;
+  name: string;
+  domain: string;
+}
+
 interface Keyword {
   id: string;
   term: string;
@@ -11,6 +17,7 @@ interface Keyword {
   volume: number;
   difficulty: number;
   websiteId: string;
+  website?: Website;
 }
 
 export default function KeywordsPage() {
@@ -83,7 +90,9 @@ export default function KeywordsPage() {
                     {getPositionIcon(kw.position)}
                     <div>
                       <h3 className="font-semibold text-slate-900">{kw.term}</h3>
-                      <p className="text-sm text-slate-500">ID sitio: {kw.websiteId}</p>
+                      <p className="text-sm text-slate-500">
+                        {kw.website?.name || 'Sitio'} - {kw.website?.domain || kw.websiteId}
+                      </p>
                     </div>
                   </div>
 

@@ -6,7 +6,16 @@ export async function GET() {
     const keywords = await prisma.keyword.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(keywords);
+
+    const websites = await prisma.website.findMany();
+    const websiteMap = new Map(websites.map(w => [w.id, w]));
+
+    const keywordsWithWebsite = keywords.map(k => ({
+      ...k,
+      website: websiteMap.get(k.websiteId),
+    }));
+
+    return NextResponse.json(keywordsWithWebsite);
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener keywords' }, { status: 500 });
   }
