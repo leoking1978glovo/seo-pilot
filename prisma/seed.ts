@@ -65,6 +65,22 @@ async function main() {
   }
 
   console.log('✅ 4 auditorías creadas');
+
+  // Crear keywords de ejemplo (usando "term" en lugar de "keyword")
+  const keywordsData = [
+    { websiteId: createdSites[0].id, term: 'tienda de tecnología', position: 3, volume: 12000, difficulty: 45 },
+    { websiteId: createdSites[0].id, term: 'comprar gadgets online', position: 7, volume: 8500, difficulty: 60 },
+    { websiteId: createdSites[1].id, term: 'blog de viajes', position: 2, volume: 22000, difficulty: 70 },
+    { websiteId: createdSites[1].id, term: 'destinos turísticos 2026', position: 5, volume: 15000, difficulty: 55 },
+    { websiteId: createdSites[2].id, term: 'clínica dental', position: 1, volume: 18000, difficulty: 80 },
+    { websiteId: createdSites[3].id, term: 'software B2B', position: 12, volume: 9500, difficulty: 90 },
+  ];
+
+  for (const kw of keywordsData) {
+    await prisma.keyword.create({ data: kw });
+  }
+
+  console.log('✅ 6 keywords creadas');
   console.log('🎉 Seed completado!');
 }
 

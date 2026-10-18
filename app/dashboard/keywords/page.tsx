@@ -6,9 +6,10 @@ import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface Keyword {
   id: string;
-  keyword: string;
+  term: string;
   position: number;
   volume: number;
+  difficulty: number;
   website: {
     name: string;
     domain: string;
@@ -47,6 +48,12 @@ export default function KeywordsPage() {
     return 'text-red-600';
   };
 
+  const getDifficultyColor = (difficulty: number) => {
+    if (difficulty <= 30) return 'text-green-600';
+    if (difficulty <= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   if (loading) {
     return <div className="p-8 text-slate-500">Cargando...</div>;
   }
@@ -80,7 +87,7 @@ export default function KeywordsPage() {
                   <div className="flex items-center gap-4">
                     {getPositionIcon(kw.position)}
                     <div>
-                      <h3 className="font-semibold text-slate-900">{kw.keyword}</h3>
+                      <h3 className="font-semibold text-slate-900">{kw.term}</h3>
                       <p className="text-sm text-slate-500">{kw.website.name} - {kw.website.domain}</p>
                     </div>
                   </div>
@@ -98,6 +105,13 @@ export default function KeywordsPage() {
                         {kw.volume.toLocaleString()}
                       </div>
                       <p className="text-xs text-slate-500">Volumen/mes</p>
+                    </div>
+
+                    <div className="text-right">
+                      <div className={`text-2xl font-bold ${getDifficultyColor(kw.difficulty)}`}>
+                        {kw.difficulty}
+                      </div>
+                      <p className="text-xs text-slate-500">Dificultad</p>
                     </div>
                   </div>
                 </div>

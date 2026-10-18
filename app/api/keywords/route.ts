@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const keywords = await prisma.keyword.findMany({
+      include: { website: true },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(keywords);
@@ -17,14 +18,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { websiteId, name, position, volume } = body;
+    const { websiteId, term, position, volume, difficulty } = body;
 
     const kw = await prisma.keyword.create({
       data: {
         websiteId,
-        name,
+        term,
         position: position || 0,
         volume: volume || 0,
+        difficulty: difficulty || 0,
       },
     });
 
