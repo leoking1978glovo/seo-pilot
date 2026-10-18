@@ -4,13 +4,22 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Limpiar datos existentes (en orden inverso de dependencias)
+  await prisma.keywordHistory.deleteMany({});
+  await prisma.keyword.deleteMany({});
+  await prisma.auditCheck.deleteMany({});
+  await prisma.audit.deleteMany({});
+  await prisma.report.deleteMany({});
+  await prisma.website.deleteMany({});
+  await prisma.user.deleteMany({});
+
+  console.log(' Datos anteriores eliminados');
+
   // Crear usuario demo
   const hashedPassword = await bcrypt.hash('demo1234', 12);
 
-  const user = await prisma.user.upsert({
-    where: { email: 'demo@seopilot.app' },
-    update: {},
-    create: {
+  const user = await prisma.user.create({
+    data: {
       email: 'demo@seopilot.app',
       name: 'Usuario Demo',
       password: hashedPassword,
@@ -29,10 +38,8 @@ async function main() {
 
   const createdSites = [];
   for (const site of sites) {
-    const s = await prisma.website.upsert({
-      where: { domain: site.domain },
-      update: {},
-      create: {
+    const s = await prisma.website.create({
+      data: {
         name: site.name,
         domain: site.domain,
         country: site.country,
@@ -66,7 +73,7 @@ async function main() {
 
   console.log('✅ 4 auditorías creadas');
 
-  // Crear keywords de ejemplo (usando "term" en lugar de "keyword")
+  // Crear keywords de ejemplo
   const keywordsData = [
     { websiteId: createdSites[0].id, term: 'tienda de tecnología', position: 3, volume: 12000, difficulty: 45 },
     { websiteId: createdSites[0].id, term: 'comprar gadgets online', position: 7, volume: 8500, difficulty: 60 },
@@ -81,6 +88,31 @@ async function main() {
   }
 
   console.log('✅ 6 keywords creadas');
+
+  // Crear informes de ejemplo
+  const reportsData = [
+    {
+      userId: user.id,
+      title: 'Análisis SEO Q4 2026',
+      content: 'El rendimiento SEO ha mejorado un 15% respecto al trimestre anterior. Las keywords principales muestran posiciones estables en el top 10.',
+    },
+    {
+      userId: user.id,
+      title: 'Auditoría Técnica - Diciembre',
+      content: 'Se identificaron 4 errores críticos de indexación y 12 problemas de velocidad de carga. Se recomienda priorizar la optimización de imágenes.',
+    },
+    {
+      userId: user.id,
+      title: 'Estrategia de Contenidos 2027',
+      content: 'Propuesta de creación de 24 artículos optimizados para keywords de larga cola con volumen medio-alto. Enfoque en contenido evergreen.',
+    },
+  ];
+
+  for (const report of reportsData) {
+    await prisma.report.create({ data: report });
+  }
+
+  console.log('✅ 3 informes creados');
   console.log('🎉 Seed completado!');
 }
 
