@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
+import { Search, AlertTriangle, CheckCircle } from 'lucide-react';
+import NewAuditModal from './new-audit-modal';
 
 interface Audit {
   id: string;
@@ -10,7 +11,6 @@ interface Audit {
   status: string;
   createdAt: string;
   website: {
-    id: string;
     name: string;
     domain: string;
   };
@@ -19,6 +19,7 @@ interface Audit {
 export default function AuditsPage() {
   const [audits, setAudits] = useState<Audit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadAudits();
@@ -37,29 +38,33 @@ export default function AuditsPage() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
-      case 'error':
-        return <XCircle className="w-5 h-5 text-red-600" />;
-      default:
-        return <Clock className="w-5 h-5 text-slate-400" />;
-    }
+    if (status === 'warning') return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
+    return <CheckCircle className="w-5 h-5 text-green-600" />;
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-700';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'error':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-slate-100 text-slate-700';
-    }
+    if (status === 'warning') return 'bg-yellow-100 text-yellow-700';
+    return 'bg-green-100 text-green-700';
+  };
+
+  const getStatusText = (status: string) => {
+    if (status === 'warning') return 'Advertencia';
+    return 'Completada';
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 70) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
   };
 
   if (loading) {
@@ -68,19 +73,20 @@ export default function AuditsPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Auditorías</h1>
           <p className="text-slate-500 mt-1">Historial de análisis SEO</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
           <Search className="w-4 h-4" />
           Nueva auditoría
         </button>
       </div>
 
-      {/* Lista */}
       <div className="space-y-4">
         {audits.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
@@ -100,21 +106,21 @@ export default function AuditsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <div className={`text-2xl font-bold ${audit.score >= 80 ? 'text-green-600' : audit.score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      <div className={`text-3xl font-bold ${getScoreColor(audit.score)}`}>
                         {audit.score}
                       </div>
                       <p className="text-xs text-slate-500">Puntuación</p>
                     </div>
 
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(audit.status)}`}>
-                      {audit.status === 'completed' ? 'Completada' : audit.status === 'warning' ? 'Advertencia' : audit.status === 'error' ? 'Error' : 'Pendiente'}
-                    </span>
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(audit.status)}`}>
+                      {getStatusText(audit.status)}
+                    </div>
 
-                    <span className="text-sm text-slate-400">
-                      {new Date(audit.createdAt).toLocaleDateString('es-ES')}
-                    </span>
+                    <div className="text-right">
+                      <div className="text-sm text-slate-500">{formatDate(audit.createdAt)}</div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -122,6 +128,12 @@ export default function AuditsPage() {
           ))
         )}
       </div>
+
+      <NewAuditModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAuditCreated={loadAudits}
+      />
     </div>
   );
 }
