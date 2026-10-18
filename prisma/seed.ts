@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Crear usuario demo
-  const hashedPassword = await bcrypt.hash('demo1234', 10);
+  const hashedPassword = await bcrypt.hash('demo1234', 12);
 
   const user = await prisma.user.upsert({
     where: { email: 'demo@seopilot.app' },
@@ -27,8 +27,9 @@ async function main() {
     { name: 'SaaSFlow B2B', domain: 'app.saasflow.io', country: 'ES', score: 70 },
   ];
 
+  const createdSites = [];
   for (const site of sites) {
-    await prisma.website.upsert({
+    const s = await prisma.website.upsert({
       where: { domain: site.domain },
       update: {},
       create: {
@@ -39,9 +40,31 @@ async function main() {
         userId: user.id,
       },
     });
+    createdSites.push(s);
   }
 
   console.log('✅ 4 sitios web creados');
+
+  // Crear auditorías de ejemplo
+  const audits = [
+    { websiteId: createdSites[0].id, score: 78, status: 'completed' },
+    { websiteId: createdSites[1].id, score: 85, status: 'completed' },
+    { websiteId: createdSites[2].id, score: 92, status: 'completed' },
+    { websiteId: createdSites[3].id, score: 70, status: 'warning' },
+  ];
+
+  for (const audit of audits) {
+    await prisma.audit.create({
+      data: {
+        websiteId: audit.websiteId,
+        userId: user.id,
+        score: audit.score,
+        status: audit.status,
+      },
+    });
+  }
+
+  console.log('✅ 4 auditorías creadas');
   console.log('🎉 Seed completado!');
 }
 
