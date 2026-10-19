@@ -25,7 +25,6 @@ export default function NewReportModal({ isOpen, onClose, onReportCreated }: New
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: 'cmvb08yi00000ohc2kk7cj8zj',
           title,
           content,
         }),

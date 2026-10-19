@@ -16,13 +16,13 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, title, content } = body;
+    const { title, content } = body;
 
     const report = await prisma.report.create({
       data: {
-        userId,
         title,
         content,
+        user: { connect: { email: 'demo@seopilot.app' } },
       },
     });
 
