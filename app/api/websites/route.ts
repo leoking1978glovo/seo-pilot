@@ -44,3 +44,19 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, name, domain, country } = body;
+
+    const website = await prisma.website.update({
+      where: { id },
+      data: { name, domain, country },
+    });
+
+    return NextResponse.json(website);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al actualizar sitio' }, { status: 500 });
+  }
+}

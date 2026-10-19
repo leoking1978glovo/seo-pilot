@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, Plus, Edit, Trash2 } from 'lucide-react';
 import AddSiteModal from './add-site-modal';
+import EditSiteModal from './edit-site-modal';
 
 interface Website {
   id: string;
@@ -16,11 +17,11 @@ interface Website {
 export default function WebsitesPage() {
   const [websites, setWebsites] = useState<Website[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingSite, setEditingSite] = useState<Website | null>(null);
 
-  useEffect(() => {
-    loadWebsites();
-  }, []);
+  useEffect(() => { loadWebsites(); }, []);
 
   const loadWebsites = async () => {
     try {
@@ -28,28 +29,28 @@ export default function WebsitesPage() {
       const data = await res.json();
       setWebsites(data);
     } catch (error) {
-      console.error('Error al cargar sitios:', error);
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este sitio?')) return;
-
+    if (!confirm('¿Eliminar este sitio? Se borrarán también sus auditorías y keywords.')) return;
     try {
       const res = await fetch(`/api/websites/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        loadWebsites();
-      }
+      if (res.ok) loadWebsites();
     } catch (error) {
       console.error('Error al eliminar:', error);
     }
   };
 
-  if (loading) {
-    return <div className="p-8 text-slate-500">Cargando...</div>;
-  }
+  const handleEdit = (site: Website) => {
+    setEditingSite(site);
+    setIsEditOpen(true);
+  };
+
+  if (loading) return <div className="p-8 text-slate-500">Cargando...</div>;
 
   return (
     <div className="p-8">
@@ -59,7 +60,7 @@ export default function WebsitesPage() {
           <p className="text-slate-500 mt-1">Gestiona tus proyectos SEO</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsAddOpen(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -92,7 +93,10 @@ export default function WebsitesPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                    <button
+                      onClick={() => handleEdit(site)}
+                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
@@ -110,9 +114,16 @@ export default function WebsitesPage() {
       </div>
 
       <AddSiteModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
         onSiteAdded={loadWebsites}
+      />
+
+      <EditSiteModal
+        isOpen={isEditOpen}
+        site={editingSite}
+        onClose={() => setIsEditOpen(false)}
+        onUpdated={loadWebsites}
       />
     </div>
   );
