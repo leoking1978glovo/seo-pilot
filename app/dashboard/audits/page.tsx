@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Search, AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
 import NewAuditModal from './new-audit-modal';
 
 interface Audit {
@@ -34,6 +34,16 @@ export default function AuditsPage() {
       console.error('Error al cargar auditorías:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar esta auditoría?')) return;
+    try {
+      const res = await fetch(`/api/audits/${id}`, { method: 'DELETE' });
+      if (res.ok) loadAudits();
+    } catch (error) {
+      console.error('Error al eliminar:', error);
     }
   };
 
@@ -121,6 +131,13 @@ export default function AuditsPage() {
                     <div className="text-right">
                       <div className="text-sm text-slate-500">{formatDate(audit.createdAt)}</div>
                     </div>
+
+                    <button
+                      onClick={() => handleDelete(audit.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </CardContent>
