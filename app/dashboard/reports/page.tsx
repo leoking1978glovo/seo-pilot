@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Trash2 } from 'lucide-react';
 import NewReportModal from './new-report-modal';
 
 interface Report {
@@ -34,6 +34,16 @@ export default function ReportsPage() {
       console.error('Error al cargar informes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar este informe?')) return;
+    try {
+      const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+      if (res.ok) loadReports();
+    } catch (error) {
+      console.error('Error al eliminar:', error);
     }
   };
 
@@ -85,6 +95,15 @@ export default function ReportsPage() {
                       <span>•</span>
                       <span>{formatDate(report.createdAt)}</span>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDelete(report.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </CardContent>
