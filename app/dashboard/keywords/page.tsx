@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Minus, Trash2 } from 'lucide-react';
 import NewKeywordModal from './new-keyword-modal';
 
 interface Website {
@@ -39,6 +39,16 @@ export default function KeywordsPage() {
       console.error('Error al cargar keywords:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar esta keyword?')) return;
+    try {
+      const res = await fetch(`/api/keywords/${id}`, { method: 'DELETE' });
+      if (res.ok) loadKeywords();
+    } catch (error) {
+      console.error('Error al eliminar:', error);
     }
   };
 
@@ -96,7 +106,7 @@ export default function KeywordsPage() {
                     <div>
                       <h3 className="font-semibold text-slate-900">{kw.term}</h3>
                       <p className="text-sm text-slate-500">
-                        {kw.website?.name || 'Sitio'} - {kw.website?.domain || kw.websiteId}
+                        {kw.website ? `${kw.website.name} - ${kw.website.domain}` : 'Sitio eliminado'}
                       </p>
                     </div>
                   </div>
@@ -122,6 +132,13 @@ export default function KeywordsPage() {
                       </div>
                       <p className="text-xs text-slate-500">Dificultad</p>
                     </div>
+
+                    <button
+                      onClick={() => handleDelete(kw.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </CardContent>
