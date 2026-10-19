@@ -3,14 +3,13 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.website.delete({
-      where: { id: params.id },
-    });
+    const { id } = await params;
+    await prisma.website.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error al eliminar sitio' }, { status: 500 });
   }
 }
