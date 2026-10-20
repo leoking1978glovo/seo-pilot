@@ -1,3 +1,4 @@
+// Endpoint de auditoria real via PageSpeed Insights
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
