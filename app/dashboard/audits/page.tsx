@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
+import { Search, AlertTriangle, CheckCircle, Trash2, Eye } from 'lucide-react';
 import NewAuditModal from './new-audit-modal';
 
 interface Audit {
@@ -111,7 +112,9 @@ export default function AuditsPage() {
                   <div className="flex items-center gap-4">
                     {getStatusIcon(audit.status)}
                     <div>
-                      <h3 className="font-semibold text-slate-900">{audit.website.name}</h3>
+                      <Link href={`/dashboard/audits/${audit.id}`}>
+                        <h3 className="font-semibold text-slate-900 hover:text-blue-600 transition-colors">{audit.website.name}</h3>
+                      </Link>
                       <p className="text-sm text-slate-500">{audit.website.domain}</p>
                     </div>
                   </div>
@@ -131,6 +134,13 @@ export default function AuditsPage() {
                     <div className="text-right">
                       <div className="text-sm text-slate-500">{formatDate(audit.createdAt)}</div>
                     </div>
+
+                    <Link
+                      href={`/dashboard/audits/${audit.id}`}
+                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
 
                     <button
                       onClick={() => handleDelete(audit.id)}
