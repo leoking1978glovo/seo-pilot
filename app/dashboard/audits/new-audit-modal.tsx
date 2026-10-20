@@ -43,14 +43,11 @@ export default function NewAuditModal({ isOpen, onClose, onAuditCreated }: NewAu
     setLoading(true);
 
     try {
-      const res = await fetch('/api/audits', {
+      const res = await fetch('/api/audits/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           websiteId: selectedWebsiteId,
-          userId: 'cmvb08yi00000ohc2kk7cj8zj',
-          score: Math.floor(Math.random() * 40) + 60,
-          status: 'completed',
         }),
       });
 
@@ -59,7 +56,8 @@ export default function NewAuditModal({ isOpen, onClose, onAuditCreated }: NewAu
         onClose();
         setSelectedWebsiteId('');
       } else {
-        setError('Error al crear auditoría');
+        const data = await res.json();
+        setError(data.error || 'Error al crear auditoría');
       }
     } catch (error) {
       setError('Error de conexión');
@@ -98,6 +96,9 @@ export default function NewAuditModal({ isOpen, onClose, onAuditCreated }: NewAu
                 </option>
               ))}
             </select>
+            <p className="text-xs text-slate-500 mt-2">
+              Análisis real con Google PageSpeed Insights (Lighthouse). Puede tardar entre 30 y 60 segundos.
+            </p>
           </div>
 
           {error && (
@@ -119,7 +120,7 @@ export default function NewAuditModal({ isOpen, onClose, onAuditCreated }: NewAu
               disabled={loading || !selectedWebsiteId}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creando...' : 'Crear auditoría'}
+              {loading ? 'Analizando... (60s)' : 'Crear auditoría'}
             </button>
           </div>
         </form>
