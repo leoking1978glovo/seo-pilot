@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, AlertTriangle, CheckCircle, Trash2, Eye } from 'lucide-react';
 import NewAuditModal from './new-audit-modal';
+import AuditDetailModal from './audit-detail-modal';
 
 interface Audit {
   id: string;
@@ -21,6 +21,7 @@ export default function AuditsPage() {
   const [audits, setAudits] = useState<Audit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAudits();
@@ -112,9 +113,7 @@ export default function AuditsPage() {
                   <div className="flex items-center gap-4">
                     {getStatusIcon(audit.status)}
                     <div>
-                      <Link href={`/dashboard/audits/${audit.id}`}>
-                        <h3 className="font-semibold text-slate-900 hover:text-blue-600 transition-colors">{audit.website.name}</h3>
-                      </Link>
+                      <h3 className="font-semibold text-slate-900">{audit.website.name}</h3>
                       <p className="text-sm text-slate-500">{audit.website.domain}</p>
                     </div>
                   </div>
@@ -135,12 +134,12 @@ export default function AuditsPage() {
                       <div className="text-sm text-slate-500">{formatDate(audit.createdAt)}</div>
                     </div>
 
-                    <Link
-                      href={`/dashboard/audits/${audit.id}`}
+                    <button
+                      onClick={() => setSelectedAuditId(audit.id)}
                       className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
                     >
                       <Eye className="w-4 h-4" />
-                    </Link>
+                    </button>
 
                     <button
                       onClick={() => handleDelete(audit.id)}
@@ -160,6 +159,11 @@ export default function AuditsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAuditCreated={loadAudits}
+      />
+
+      <AuditDetailModal
+        auditId={selectedAuditId}
+        onClose={() => setSelectedAuditId(null)}
       />
     </div>
   );
